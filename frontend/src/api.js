@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: 'http://localhost:5000/api',
+  baseURL: 'https://securedocs-api-ux8z.onrender.com/api',
 });
 
 // Automatically attach the JWT token to every request
