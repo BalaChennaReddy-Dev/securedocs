@@ -25,5 +25,15 @@ router.post(
   upload.single('file'), 
   documentController.uploadDocument
 );
+// SECURE ROUTE: Anyone logged in can request a file, but the server decides if they get it.
+router.get(
+  '/download/:id', 
+  verifyToken, 
+  documentController.downloadDocument
+);
+// SECURE ROUTE: Get list of documents
+router.get('/', verifyToken, documentController.getDocuments);
+// SECURE ROUTE: Get list of documents
+
 
 module.exports = router;
