@@ -1,4 +1,4 @@
-const AuditLog = require('../models/AuditLog');
+const AuditLog = require('../models/Auditlog');
 
 // Get all activity for a specific document
 exports.getDocumentAuditTrail = async (req, res) => {

@@ -1,7 +1,7 @@
 const Permission = require('../models/Permission');
 const Document = require('../models/Document');
-const User = require('../models/User');
-const AuditLog = require('../models/AuditLog');
+const User = require('../models/user');
+const AuditLog = require('../models/Auditlog');
 
 // Grant access to a document
 exports.grantAccess = async (req, res) => {

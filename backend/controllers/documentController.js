@@ -2,7 +2,7 @@ const path = require('path');
 const fs = require('fs');
 const Permission = require('../models/Permission'); // We need this to check access!
 const Document = require('../models/Document');
-const AuditLog = require('../models/AuditLog');
+const AuditLog = require('../models/Auditlog');
 
 // Upload a new document
 exports.uploadDocument = async (req, res) => {
