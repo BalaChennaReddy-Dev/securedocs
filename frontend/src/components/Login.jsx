@@ -32,7 +32,7 @@ export default function Login() {
 
   return (
     <div style={{ maxWidth: '400px', margin: '100px auto', padding: '20px', fontFamily: 'system-ui' }}>
-      <h2>TrustVault Access</h2>
+      <h2>SecureDocs Access</h2>
       {error && <div style={{ color: 'red', marginBottom: '10px' }}>{error}</div>}
       
       <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>

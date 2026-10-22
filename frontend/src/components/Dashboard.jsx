@@ -11,9 +11,11 @@ export default function Dashboard() {
   // CENTRALIZED PERMISSION STATE
   const [selectedDocId, setSelectedDocId] = useState('');
   const [docSearchQuery, setDocSearchQuery] = useState('');
+  const [isDocDropdownOpen, setIsDocDropdownOpen] = useState(false); // NEW: Controls auto-suggest visibility
+  
   const [userSearchQuery, setUserSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
-  const USERS_PER_PAGE = 5; // Reduced to 5 so the UI stays compact
+  const USERS_PER_PAGE = 5; 
 
   const navigate = useNavigate();
 
@@ -102,7 +104,7 @@ export default function Dashboard() {
   return (
     <div style={{ maxWidth: '900px', margin: '40px auto', fontFamily: 'system-ui' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '2px solid #eee', paddingBottom: '20px', marginBottom: '20px' }}>
-        <h1 style={{ margin: 0 }}>TrustVault Dashboard</h1>
+        <h1 style={{ margin: 0 }}>SecureDocs Dashboard</h1>
         <button onClick={logout} style={{ padding: '8px 16px', background: '#333', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>Logout</button>
       </div>
       
@@ -149,39 +151,64 @@ export default function Dashboard() {
           <div style={{ flex: 1, background: '#fff', border: '1px solid #dee2e6', borderRadius: '8px', padding: '20px', boxShadow: '0 4px 6px rgba(0,0,0,0.05)', alignSelf: 'flex-start' }}>
             <h3 style={{ marginTop: 0, color: '#d9534f', borderBottom: '2px solid #f9f9f9', paddingBottom: '10px' }}>Access Control Center</h3>
             
-            {/* Step A: Select Document */}
-            <div style={{ marginBottom: '20px' }}>
-              <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '5px' }}>1. Select Document</label>
+            {/* Step A: Auto-Suggest Document Search */}
+            <div style={{ marginBottom: '25px', position: 'relative' }}>
+              <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '5px' }}>1. Find Document</label>
               <input 
                 type="text" 
-                placeholder="Search documents..." 
+                placeholder="Start typing a document name..." 
                 value={docSearchQuery}
-                onChange={(e) => setDocSearchQuery(e.target.value)}
-                style={{ width: '100%', padding: '8px', marginBottom: '10px', boxSizing: 'border-box', border: '1px solid #ccc', borderRadius: '4px' }}
+                onChange={(e) => {
+                  setDocSearchQuery(e.target.value);
+                  setIsDocDropdownOpen(true);
+                  if (e.target.value === '') setSelectedDocId(''); // Clear selection if input is empty
+                }}
+                onFocus={() => setIsDocDropdownOpen(true)}
+                // setTimeout allows the onClick event on the dropdown item to fire before it hides
+                onBlur={() => setTimeout(() => setIsDocDropdownOpen(false), 200)} 
+                style={{ width: '100%', padding: '10px', boxSizing: 'border-box', border: '1px solid #ccc', borderRadius: '4px', outline: selectedDocId ? '2px solid #28a745' : 'none' }}
               />
-              <select 
-                style={{ width: '100%', padding: '8px', boxSizing: 'border-box', border: '1px solid #ccc', borderRadius: '4px' }}
-                value={selectedDocId}
-                onChange={(e) => setSelectedDocId(e.target.value)}
-              >
-                <option value="">-- Choose a document --</option>
-                {filteredDocs.map(d => (
-                  <option key={d._id} value={d._id}>{d.originalName}</option>
-                ))}
-              </select>
+              
+              {/* Floating Dropdown Menu */}
+              {isDocDropdownOpen && filteredDocs.length > 0 && (
+                <ul style={{ 
+                  position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 10,
+                  background: '#fff', border: '1px solid #ccc', borderRadius: '4px', 
+                  maxHeight: '200px', overflowY: 'auto', listStyle: 'none', padding: 0, margin: '5px 0 0 0',
+                  boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+                }}>
+                  {filteredDocs.map(d => (
+                    <li 
+                      key={d._id}
+                      onMouseDown={() => {
+                        setSelectedDocId(d._id);
+                        setDocSearchQuery(d.originalName); // Auto-fill the input with the selected name
+                        setIsDocDropdownOpen(false);
+                      }}
+                      style={{ 
+                        padding: '10px', cursor: 'pointer', borderBottom: '1px solid #eee',
+                        background: selectedDocId === d._id ? '#e9ecef' : '#fff'
+                      }}
+                    >
+                      {d.originalName}
+                    </li>
+                  ))}
+                </ul>
+              )}
             </div>
 
             {/* Step B: Select User & Apply Action */}
-            <div>
+            <div style={{ opacity: selectedDocId ? 1 : 0.5, transition: 'opacity 0.2s' }}>
               <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '5px' }}>2. Manage Directory Access</label>
               <input 
                 type="text" 
-                placeholder="Search users..." 
+                placeholder="Search users by email or role..." 
                 value={userSearchQuery}
                 onChange={(e) => {
                   setUserSearchQuery(e.target.value);
                   setCurrentPage(1);
                 }}
+                disabled={!selectedDocId}
                 style={{ width: '100%', padding: '8px', marginBottom: '10px', boxSizing: 'border-box', border: '1px solid #ccc', borderRadius: '4px' }}
               />
 
