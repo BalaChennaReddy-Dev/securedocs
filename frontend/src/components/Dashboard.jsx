@@ -89,10 +89,12 @@ export default function Dashboard() {
     d.originalName.toLowerCase().includes(docSearchQuery.toLowerCase())
   );
 
+
+  
   const filteredUsers = usersList.filter(u => 
     u.email !== localStorage.getItem('email') && 
-    u.role !== 'Admin' &&  // EXCLUDE ADMINS
-    u.role !== 'Owner' &&  // EXCLUDE OWNERS
+    u.role !== 'Admin' &&  
+  
     (u.email.toLowerCase().includes(userSearchQuery.toLowerCase()) || 
      u.role.toLowerCase().includes(userSearchQuery.toLowerCase()))
   );
