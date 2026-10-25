@@ -1,22 +1,22 @@
-# TrustVault: Secure Document Sharing Platform
+# Securedocs: Secure Document Sharing Platform
 
-TrustVault is a security-first document management platform designed to eliminate accidental over-sharing and provide an incontrovertible audit trail. It enforces precise, user-specific file access controls and logs every system action to a permanent ledger.
+SecureDocs is a security-first document management platform designed to eliminate accidental over-sharing and provide an incontrovertible audit trail. It enforces precise, user-specific file access controls and logs every system action to a permanent ledger.
 
 ## Live Deployment
-- **Frontend URL:** [Insert Vercel URL here]
-- **Backend API URL:** [Insert Render URL here]
+- **Frontend URL:** https://securedocs-mocha.vercel.app/
+- **Backend API URL:** https://securedocs-api-ux8z.onrender.com/api
 
 ## Test Credentials
 | Role | Email | Password |
 | :--- | :--- | :--- |
-| **Admin** | admin@trustvault.com | password123 |
-| **Owner** | owner@trustvault.com | password123 |
-| **Viewer** | viewer@trustvault.com | password123 |
+| **Admin** | admin@securedocs.com | password123 |
+| **Owner** | a@gmail.com | 123456 |
+
+##we can create new owner by registering a new user and each user is by default owner
 
 ## The Permission Model
 Permissions are strictly **Document-to-User**. 
 - **Owners** implicitly have full access to any document they upload.
-- **Viewers** have absolutely no access to any document by default. An Owner must explicitly grant 'Read' access to a specific user's email address for a specific document.
 - **Admins** have global read access to all documents to fulfill their compliance oversight role, but they cannot grant/revoke permissions for files they do not own.
 
 ## Deliberate Omissions & Design Decisions
