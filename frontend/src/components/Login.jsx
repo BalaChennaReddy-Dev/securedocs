@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
 import api from '../api';
 
@@ -56,6 +57,12 @@ export default function Login() {
           Authenticate
         </button>
       </form>
+      {error && <p style={{ color: 'red', marginTop: '15px' }}>{error}</p>}
+      
+      {/* ADD THIS NEW PARAGRAPH */}
+      <p style={{ marginTop: '20px' }}>
+        Don't have an account? <Link to="/register" style={{ color: '#007bff' }}>Register here</Link>
+      </p>
     </div>
   );
 }
