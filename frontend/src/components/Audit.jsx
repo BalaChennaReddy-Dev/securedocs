@@ -15,10 +15,10 @@ export default function Audit() {
   const fetchLogs = async () => {
     try {
       const res = await api.get('/audit/system');
-      // Safeguard: Ensure we always set an array, even if the backend acts up
-      setLogs(Array.isArray(res.data) ? res.data : []);
+      // Look inside res.data.logs instead of just res.data
+      setLogs(Array.isArray(res.data.logs) ? res.data.logs : []);
     } catch (err) {
-      setError('Failed to fetch audit logs.');
+      setError('Failed to fetch audit logs.');   
     }
   };
 
@@ -119,16 +119,25 @@ export default function Audit() {
             </thead>
             <tbody>
               {logs.map((log, index) => (
-                <tr key={index}>
-                  <td style={{ padding: '12px', borderBottom: '1px solid #ddd' }}>{log.action}</td>
-                  <td style={{ padding: '12px', borderBottom: '1px solid #ddd' }}>{log.userId?.email || 'Deleted User'}</td>
-                  
-                  {/* THE FIX IS HERE: Safely extract a string whether documentId is an object or text */}
+                <tr key={log._id || index}>
                   <td style={{ padding: '12px', borderBottom: '1px solid #ddd' }}>
-                    {log.documentId?.title || (typeof log.documentId === 'string' ? log.documentId : 'N/A')}
+                    {log.action}
                   </td>
                   
-                  <td style={{ padding: '12px', borderBottom: '1px solid #ddd' }}>{new Date(log.timestamp).toLocaleString()}</td>
+                  {/* Changed from userId to actorId */}
+                  <td style={{ padding: '12px', borderBottom: '1px solid #ddd' }}>
+                    {log.actorId?.email || 'Deleted User'}
+                  </td>
+                  
+                  {/* Changed from title to originalName */}
+                  <td style={{ padding: '12px', borderBottom: '1px solid #ddd' }}>
+                    {log.documentId?.originalName || (typeof log.documentId === 'string' ? log.documentId : 'N/A')}
+                  </td>
+                  
+                  {/* Changed from timestamp to createdAt */}
+                  <td style={{ padding: '12px', borderBottom: '1px solid #ddd' }}>
+                    {log.createdAt ? new Date(log.createdAt).toLocaleString() : 'N/A'}
+                  </td>
                 </tr>
               ))}
             </tbody>
