@@ -2,7 +2,6 @@ const User = require('../models/user');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
-// Register a new user
 exports.register = async (req, res) => {
   try {
     const { email, password, role } = req.body;
@@ -16,16 +15,16 @@ exports.register = async (req, res) => {
     const existingUser = await User.findOne({ email });
     if (existingUser) return res.status(400).json({ error: 'Email already in use' });
 
-    // Hash password (SECURITY: Never store plain text passwords)
+    // Hash password
     const salt = await bcrypt.genSalt(10);
-    const passwordHash = await bcrypt.hash(password, salt);
+    const hashedPassword = await bcrypt.hash(password, salt);
 
-    const newUser = new User({ email, passwordHash, role });
+    // FIX 1: Save the hash to the 'password' field in the database!
+    const newUser = new User({ email, password: hashedPassword, role });
     await newUser.save();
 
     res.status(201).json({ message: 'User registered successfully', role: newUser.role });
   } catch (error) {
-    // 🔥 THIS IS THE CRITICAL ADDITION 🔥
     console.error("🔥 REGISTER CRASH DETAILS:", error); 
     res.status(500).json({ error: 'Server error during registration' });
   }
@@ -39,7 +38,8 @@ exports.login = async (req, res) => {
     const user = await User.findOne({ email });
     if (!user) return res.status(400).json({ error: 'Invalid credentials' });
 
-    const isMatch = await bcrypt.compare(password, user.passwordHash);
+    // FIX 2: Check against user.password instead of user.passwordHash
+    const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) return res.status(400).json({ error: 'Invalid credentials' });
 
     // Generate token containing the user's ID and Role
@@ -51,7 +51,6 @@ exports.login = async (req, res) => {
 
     res.status(200).json({ token, role: user.role, email: user.email });
   } catch (error) {
-    // 🔥 THIS IS THE CRITICAL ADDITION 🔥
     console.error("🔥 LOGIN CRASH DETAILS:", error); 
     res.status(500).json({ error: 'Server error during login' });
   }
