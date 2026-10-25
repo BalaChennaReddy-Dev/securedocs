@@ -50,7 +50,7 @@ export default function Register() {
       {error && <p style={{ color: 'red', marginTop: '15px' }}>{error}</p>}
       
       <p style={{ marginTop: '20px' }}>
-        Already have an account? <Link to="/login" style={{ color: '#007bff' }}>Login here</Link>
+        Already have an account? <Link to="/" style={{ color: '#007bff' }}>Login here</Link>
       </p>
     </div>
   );

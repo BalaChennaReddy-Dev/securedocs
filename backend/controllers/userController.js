@@ -9,9 +9,6 @@ exports.getAllUsers = async (req, res) => {
   }
 };
 
-const User = require('../models/user');
-
-// (Keep your existing getAllUsers function here)
 
 exports.deleteUser = async (req, res) => {
   try {

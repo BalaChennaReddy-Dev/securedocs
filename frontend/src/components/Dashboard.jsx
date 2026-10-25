@@ -81,7 +81,7 @@ export default function Dashboard() {
 
   const logout = () => {
     localStorage.clear();
-    navigate('/login');
+    navigate('/');
   };
 
   // --- FILTERING LOGIC ---
