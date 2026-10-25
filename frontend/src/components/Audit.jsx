@@ -31,6 +31,10 @@ export default function Audit() {
       setError('Failed to fetch users.');
     }
   };
+    const logout = () => {
+    localStorage.clear();
+    navigate('/login');
+  };
 
   const handleDeleteUser = async (userId) => {
     if (!window.confirm('Are you sure you want to permanently delete this user?')) return;
@@ -62,10 +66,7 @@ export default function Audit() {
           Manage Users ({users.length})
         </button>
       </div>
-        const logout = () => {
-    localStorage.clear();
-    navigate('/login');
-  };
+      
 
       {view === 'users' && (
         <div style={{ border: '1px solid #ddd', borderRadius: '8px', padding: '20px' }}>
