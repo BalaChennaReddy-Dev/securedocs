@@ -1,87 +1,140 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import api from '../api';
 
 export default function Audit() {
   const [logs, setLogs] = useState([]);
-  const navigate = useNavigate();
+  const [users, setUsers] = useState([]);
+  const [error, setError] = useState('');
+  const [view, setView] = useState('logs'); 
 
   useEffect(() => {
-    const fetchLogs = async () => {
-      try {
-        const res = await api.get('/audit/system');
-        setLogs(res.data.logs);
-      } catch (err) {
-        console.error('Failed to fetch audit logs');
-      }
-    };
     fetchLogs();
+    fetchUsers();
   }, []);
 
-  // Format the MongoDB timestamp into a readable local date/time
-  const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleString();
+  const fetchLogs = async () => {
+    try {
+      const res = await api.get('/audit/system');
+      // Safeguard: Ensure we always set an array, even if the backend acts up
+      setLogs(Array.isArray(res.data) ? res.data : []);
+    } catch (err) {
+      setError('Failed to fetch audit logs.');
+    }
   };
 
-  const logout = () => {
-    localStorage.clear();
-    navigate('/login');
+  const fetchUsers = async () => {
+    try {
+      const res = await api.get('/users');
+      // Safeguard: Ensure we always set an array
+      setUsers(Array.isArray(res.data) ? res.data : []);
+    } catch (err) {
+      setError('Failed to fetch users.');
+    }
   };
 
-  // Helper to color-code the action badges for quick scanning
-  const getBadgeStyle = (action) => {
-    if (action === 'UNAUTHORIZED_ATTEMPT') return { bg: '#f8d7da', text: '#721c24' };
-    if (action === 'GRANT_ACCESS' || action === 'DOWNLOAD') return { bg: '#d4edda', text: '#155724' };
-    if (action === 'REVOKE_ACCESS') return { bg: '#fff3cd', text: '#856404' };
-    return { bg: '#e2e3e5', text: '#383d41' };
+  const handleDeleteUser = async (userId) => {
+    if (!window.confirm('Are you sure you want to permanently delete this user?')) return;
+    
+    try {
+      await api.delete(`/users/${userId}`);
+      setUsers(users.filter(user => user._id !== userId));
+    } catch (err) {
+      alert(err.response?.data?.message || 'Failed to delete user.');
+    }
   };
 
   return (
-    <div style={{ maxWidth: '1000px', margin: '40px auto', fontFamily: 'system-ui' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '2px solid #eee', paddingBottom: '20px', marginBottom: '20px' }}>
-        <h1 style={{ margin: 0 }}>SecureDocs System Audit</h1>
-        <button onClick={logout} style={{ padding: '8px 16px', background: '#333', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>Logout</button>
+    <div style={{ padding: '20px', maxWidth: '1000px', margin: '0 auto', fontFamily: 'system-ui' }}>
+      <h1>Admin Dashboard</h1>
+      {error && <p style={{ color: 'red' }}>{error}</p>}
+
+      <div style={{ marginBottom: '20px', display: 'flex', gap: '10px' }}>
+        <button 
+          onClick={() => setView('logs')}
+          style={{ padding: '10px 20px', cursor: 'pointer', background: view === 'logs' ? '#007bff' : '#ccc', color: '#fff', border: 'none', borderRadius: '4px' }}
+        >
+          System Audit Logs
+        </button>
+        <button 
+          onClick={() => setView('users')}
+          style={{ padding: '10px 20px', cursor: 'pointer', background: view === 'users' ? '#007bff' : '#ccc', color: '#fff', border: 'none', borderRadius: '4px' }}
+        >
+          Manage Users ({users.length})
+        </button>
       </div>
 
-      <p style={{ color: '#666', marginBottom: '30px' }}>
-        Immutable ledger of all system activity. Records cannot be altered or deleted.
-      </p>
-
-      <table style={{ width: '100%', borderCollapse: 'collapse', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
-        <thead>
-          <tr style={{ background: '#f8f9fa', textAlign: 'left' }}>
-            <th style={{ padding: '15px', borderBottom: '2px solid #dee2e6' }}>Timestamp</th>
-            <th style={{ padding: '15px', borderBottom: '2px solid #dee2e6' }}>Actor</th>
-            <th style={{ padding: '15px', borderBottom: '2px solid #dee2e6' }}>Action</th>
-            <th style={{ padding: '15px', borderBottom: '2px solid #dee2e6' }}>Document</th>
-            <th style={{ padding: '15px', borderBottom: '2px solid #dee2e6' }}>Details</th>
-          </tr>
-        </thead>
-        <tbody style={{ background: '#fff' }}>
-          {logs.map((log) => {
-            const badge = getBadgeStyle(log.action);
-            return (
-              <tr key={log._id} style={{ borderBottom: '1px solid #eee' }}>
-                <td style={{ padding: '15px', fontSize: '14px' }}>{formatDate(log.createdAt)}</td>
-                <td style={{ padding: '15px', fontSize: '14px' }}>
-                  <strong>{log.actorId?.email || 'System'}</strong><br/>
-                  <span style={{ color: '#888', fontSize: '12px' }}>{log.actorId?.role || ''}</span>
-                </td>
-                <td style={{ padding: '15px' }}>
-                  <span style={{ 
-                    padding: '4px 8px', borderRadius: '4px', fontSize: '12px', fontWeight: 'bold',
-                    background: badge.bg, color: badge.text
-                  }}>
-                    {log.action}
-                  </span>
-                </td>
-                <td style={{ padding: '15px', fontSize: '14px' }}>{log.documentId?.originalName || 'N/A'}</td>
-                <td style={{ padding: '15px', fontSize: '14px' }}>{log.details}</td>
+      {view === 'users' && (
+        <div style={{ border: '1px solid #ddd', borderRadius: '8px', padding: '20px' }}>
+          <h2>Total Registered Users: {users.length}</h2>
+          <table style={{ width: '100%', textAlign: 'left', borderCollapse: 'collapse', marginTop: '10px' }}>
+            <thead>
+              <tr style={{ background: '#f5f5f5' }}>
+                <th style={{ padding: '12px', borderBottom: '2px solid #ddd' }}>Email</th>
+                <th style={{ padding: '12px', borderBottom: '2px solid #ddd' }}>Role</th>
+                <th style={{ padding: '12px', borderBottom: '2px solid #ddd' }}>Joined</th>
+                <th style={{ padding: '12px', borderBottom: '2px solid #ddd' }}>Actions</th>
               </tr>
-            );
-          })}
-        </tbody>
-      </table>
+            </thead>
+            <tbody>
+              {users.map((u) => (
+                <tr key={u._id}>
+                  <td style={{ padding: '12px', borderBottom: '1px solid #ddd' }}>{u.email}</td>
+                  <td style={{ padding: '12px', borderBottom: '1px solid #ddd' }}>
+                    <span style={{ background: u.role === 'Admin' ? '#dc3545' : '#28a745', color: '#fff', padding: '4px 8px', borderRadius: '12px', fontSize: '12px' }}>
+                      {u.role}
+                    </span>
+                  </td>
+                  <td style={{ padding: '12px', borderBottom: '1px solid #ddd' }}>
+                    {/* Safeguard: Check if createdAt exists before formatting */}
+                    {u.createdAt ? new Date(u.createdAt).toLocaleDateString() : 'N/A'}
+                  </td>
+                  <td style={{ padding: '12px', borderBottom: '1px solid #ddd' }}>
+                    {u.role !== 'Admin' && (
+                      <button 
+                        onClick={() => handleDeleteUser(u._id)}
+                        style={{ padding: '6px 12px', background: '#dc3545', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
+                      >
+                        Delete User
+                      </button>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {view === 'logs' && (
+        <div style={{ border: '1px solid #ddd', borderRadius: '8px', padding: '20px' }}>
+           <h2>Immutable Action Ledger</h2>
+           <table style={{ width: '100%', textAlign: 'left', borderCollapse: 'collapse', marginTop: '10px' }}>
+            <thead>
+              <tr style={{ background: '#f5f5f5' }}>
+                <th style={{ padding: '12px', borderBottom: '2px solid #ddd' }}>Action</th>
+                <th style={{ padding: '12px', borderBottom: '2px solid #ddd' }}>User</th>
+                <th style={{ padding: '12px', borderBottom: '2px solid #ddd' }}>Document</th>
+                <th style={{ padding: '12px', borderBottom: '2px solid #ddd' }}>Timestamp</th>
+              </tr>
+            </thead>
+            <tbody>
+              {logs.map((log, index) => (
+                <tr key={index}>
+                  <td style={{ padding: '12px', borderBottom: '1px solid #ddd' }}>{log.action}</td>
+                  <td style={{ padding: '12px', borderBottom: '1px solid #ddd' }}>{log.userId?.email || 'Deleted User'}</td>
+                  
+                  {/* THE FIX IS HERE: Safely extract a string whether documentId is an object or text */}
+                  <td style={{ padding: '12px', borderBottom: '1px solid #ddd' }}>
+                    {log.documentId?.title || (typeof log.documentId === 'string' ? log.documentId : 'N/A')}
+                  </td>
+                  
+                  <td style={{ padding: '12px', borderBottom: '1px solid #ddd' }}>{new Date(log.timestamp).toLocaleString()}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   );
 }
