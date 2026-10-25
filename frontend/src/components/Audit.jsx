@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import api from '../api';
 
 export default function Audit() {
@@ -6,6 +7,7 @@ export default function Audit() {
   const [users, setUsers] = useState([]);
   const [error, setError] = useState('');
   const [view, setView] = useState('logs'); 
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetchLogs();
@@ -31,11 +33,7 @@ export default function Audit() {
       setError('Failed to fetch users.');
     }
   };
-    const logout = () => {
-    localStorage.clear();
-    navigate('/login');
-  };
-
+  
   const handleDeleteUser = async (userId) => {
     if (!window.confirm('Are you sure you want to permanently delete this user?')) return;
     
@@ -47,9 +45,33 @@ export default function Audit() {
     }
   };
 
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('role');
+    navigate('/'); 
+  };
+
   return (
     <div style={{ padding: '20px', maxWidth: '1000px', margin: '0 auto', fontFamily: 'system-ui' }}>
-      <h1>Admin Dashboard</h1>
+      
+      {/* Header section with Logout Button */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <h1>Admin Dashboard</h1>
+        <button 
+          onClick={handleLogout} 
+          style={{ 
+            padding: '8px 16px', 
+            background: '#dc3545', 
+            color: 'white', 
+            border: 'none', 
+            borderRadius: '4px', 
+            cursor: 'pointer' 
+          }}
+        >
+          Logout
+        </button>
+      </div>
+      
       {error && <p style={{ color: 'red' }}>{error}</p>}
 
       <div style={{ marginBottom: '20px', display: 'flex', gap: '10px' }}>
@@ -67,7 +89,6 @@ export default function Audit() {
         </button>
       </div>
       
-
       {view === 'users' && (
         <div style={{ border: '1px solid #ddd', borderRadius: '8px', padding: '20px' }}>
           <h2>Total Registered Users: {users.length}</h2>
@@ -90,7 +111,6 @@ export default function Audit() {
                     </span>
                   </td>
                   <td style={{ padding: '12px', borderBottom: '1px solid #ddd' }}>
-                    {/* Safeguard: Check if createdAt exists before formatting */}
                     {u.createdAt ? new Date(u.createdAt).toLocaleDateString() : 'N/A'}
                   </td>
                   <td style={{ padding: '12px', borderBottom: '1px solid #ddd' }}>
@@ -128,18 +148,12 @@ export default function Audit() {
                   <td style={{ padding: '12px', borderBottom: '1px solid #ddd' }}>
                     {log.action}
                   </td>
-                  
-                  {/* Changed from userId to actorId */}
                   <td style={{ padding: '12px', borderBottom: '1px solid #ddd' }}>
                     {log.actorId?.email || 'Deleted User'}
                   </td>
-                  
-                  {/* Changed from title to originalName */}
                   <td style={{ padding: '12px', borderBottom: '1px solid #ddd' }}>
                     {log.documentId?.originalName || (typeof log.documentId === 'string' ? log.documentId : 'N/A')}
                   </td>
-                  
-                  {/* Changed from timestamp to createdAt */}
                   <td style={{ padding: '12px', borderBottom: '1px solid #ddd' }}>
                     {log.createdAt ? new Date(log.createdAt).toLocaleString() : 'N/A'}
                   </td>
