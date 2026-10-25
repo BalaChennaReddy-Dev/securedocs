@@ -1,4 +1,4 @@
-const User = require('../models/User'); // Make sure this matches your filename exactly (User.js or user.js)
+const User = require('../models/user'); // Make sure this matches your filename exactly (User.js or user.js)
 
 exports.getAllUsers = async (req, res) => {
   try {
