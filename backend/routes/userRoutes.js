@@ -1,10 +1,11 @@
 const express = require('express');
 const router = express.Router();
-const { getAllUsers, deleteUser } = require('../controllers/userController');
-const { protect, requireRole } = require('../middleware/authMiddleware');
 
-router.get('/', protect, requireRole(['Admin']), getAllUsers);
-router.delete('/:id', protect, requireRole(['Admin']), deleteUser); 
-console.log("DEBUG IMPORTS:", { protect, requireRole, getAllUsers, deleteUser });
+const userController = require('../controllers/userController');
+const authMiddleware = require('../middleware/authMiddleware');
+
+// Routes using direct object references to prevent "undefined" crashes
+router.get('/', authMiddleware.protect, authMiddleware.requireRole(['Admin']), userController.getAllUsers);
+router.delete('/:id', authMiddleware.protect, authMiddleware.requireRole(['Admin']), userController.deleteUser); 
 
 module.exports = router;
