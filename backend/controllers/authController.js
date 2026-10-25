@@ -25,6 +25,8 @@ exports.register = async (req, res) => {
 
     res.status(201).json({ message: 'User registered successfully', role: newUser.role });
   } catch (error) {
+    // 🔥 THIS IS THE CRITICAL ADDITION 🔥
+    console.error("🔥 REGISTER CRASH DETAILS:", error); 
     res.status(500).json({ error: 'Server error during registration' });
   }
 };
@@ -49,6 +51,8 @@ exports.login = async (req, res) => {
 
     res.status(200).json({ token, role: user.role, email: user.email });
   } catch (error) {
+    // 🔥 THIS IS THE CRITICAL ADDITION 🔥
+    console.error("🔥 LOGIN CRASH DETAILS:", error); 
     res.status(500).json({ error: 'Server error during login' });
   }
 };
