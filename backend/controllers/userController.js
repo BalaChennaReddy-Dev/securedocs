@@ -9,15 +9,19 @@ exports.getAllUsers = async (req, res) => {
   }
 };
 
+const User = require('../models/user');
+
+// (Keep your existing getAllUsers function here)
+
 exports.deleteUser = async (req, res) => {
   try {
-    if (req.user._id.toString() === req.params.id) {
-      return res.status(400).json({ message: 'You cannot delete your own admin account.' });
+    const deletedUser = await User.findByIdAndDelete(req.params.id);
+    if (!deletedUser) {
+      return res.status(404).json({ message: 'User not found' });
     }
-    
-    await User.findByIdAndDelete(req.params.id);
-    res.json({ message: 'User deleted successfully' });
+    res.status(200).json({ message: 'User deleted successfully' });
   } catch (error) {
-    res.status(500).json({ message: 'Error deleting user' });
+    console.error("🔥 DELETE CRASH DETAILS:", error);
+    res.status(500).json({ message: 'Failed to delete user' });
   }
 };

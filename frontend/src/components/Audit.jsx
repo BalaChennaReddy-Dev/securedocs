@@ -7,6 +7,11 @@ export default function Audit() {
   const [users, setUsers] = useState([]);
   const [error, setError] = useState('');
   const [view, setView] = useState('logs'); 
+  
+  // NEW: State for creating users
+  const [isCreating, setIsCreating] = useState(false);
+  const [newUser, setNewUser] = useState({ email: '', password: '', role: 'Owner' });
+
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -17,7 +22,6 @@ export default function Audit() {
   const fetchLogs = async () => {
     try {
       const res = await api.get('/audit/system');
-      // Look inside res.data.logs instead of just res.data
       setLogs(Array.isArray(res.data.logs) ? res.data.logs : []);
     } catch (err) {
       setError('Failed to fetch audit logs.');   
@@ -27,7 +31,6 @@ export default function Audit() {
   const fetchUsers = async () => {
     try {
       const res = await api.get('/users');
-      // Safeguard: Ensure we always set an array
       setUsers(Array.isArray(res.data) ? res.data : []);
     } catch (err) {
       setError('Failed to fetch users.');
@@ -45,9 +48,24 @@ export default function Audit() {
     }
   };
 
+  // NEW: Function to handle creating a user via the register route
+  const handleCreateUser = async (e) => {
+    e.preventDefault();
+    try {
+      await api.post('/auth/register', newUser);
+      alert('User created successfully!');
+      setIsCreating(false);
+      setNewUser({ email: '', password: '', role: 'Owner' });
+      fetchUsers(); // Refresh the list automatically
+    } catch (err) {
+      alert(err.response?.data?.error || 'Failed to create user.');
+    }
+  };
+
   const handleLogout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('role');
+    localStorage.removeItem('email');
     navigate('/'); 
   };
 
@@ -59,14 +77,7 @@ export default function Audit() {
         <h1>Admin Dashboard</h1>
         <button 
           onClick={handleLogout} 
-          style={{ 
-            padding: '8px 16px', 
-            background: '#dc3545', 
-            color: 'white', 
-            border: 'none', 
-            borderRadius: '4px', 
-            cursor: 'pointer' 
-          }}
+          style={{ padding: '8px 16px', background: '#dc3545', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
         >
           Logout
         </button>
@@ -91,7 +102,51 @@ export default function Audit() {
       
       {view === 'users' && (
         <div style={{ border: '1px solid #ddd', borderRadius: '8px', padding: '20px' }}>
-          <h2>Total Registered Users: {users.length}</h2>
+          
+          {/* NEW: Create User Header & Button */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
+            <h2 style={{ margin: 0 }}>Total Registered Users: {users.length}</h2>
+            <button 
+              onClick={() => setIsCreating(!isCreating)}
+              style={{ padding: '8px 16px', background: isCreating ? '#6c757d' : '#28a745', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
+            >
+              {isCreating ? 'Cancel' : '+ Create New User'}
+            </button>
+          </div>
+
+          {/* NEW: Create User Form */}
+          {isCreating && (
+            <form onSubmit={handleCreateUser} style={{ background: '#f8f9fa', padding: '15px', borderRadius: '6px', marginBottom: '20px', display: 'flex', gap: '10px', alignItems: 'center' }}>
+              <input 
+                type="email" 
+                placeholder="Email Address" 
+                value={newUser.email}
+                onChange={(e) => setNewUser({...newUser, email: e.target.value})}
+                required 
+                style={{ padding: '8px', flex: 1, borderRadius: '4px', border: '1px solid #ccc' }}
+              />
+              <input 
+                type="password" 
+                placeholder="Password" 
+                value={newUser.password}
+                onChange={(e) => setNewUser({...newUser, password: e.target.value})}
+                required 
+                style={{ padding: '8px', flex: 1, borderRadius: '4px', border: '1px solid #ccc' }}
+              />
+              <select 
+                value={newUser.role} 
+                onChange={(e) => setNewUser({...newUser, role: e.target.value})}
+                style={{ padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
+              >
+                <option value="Owner">Owner</option>
+                <option value="Admin">Admin</option>
+              </select>
+              <button type="submit" style={{ padding: '8px 16px', background: '#007bff', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
+                Create
+              </button>
+            </form>
+          )}
+
           <table style={{ width: '100%', textAlign: 'left', borderCollapse: 'collapse', marginTop: '10px' }}>
             <thead>
               <tr style={{ background: '#f5f5f5' }}>
