@@ -11,7 +11,7 @@ export default function Dashboard() {
   // CENTRALIZED PERMISSION STATE
   const [selectedDocId, setSelectedDocId] = useState('');
   const [docSearchQuery, setDocSearchQuery] = useState('');
-  const [isDocDropdownOpen, setIsDocDropdownOpen] = useState(false); // NEW: Controls auto-suggest visibility
+  const [isDocDropdownOpen, setIsDocDropdownOpen] = useState(false);
   
   const [userSearchQuery, setUserSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
@@ -91,6 +91,8 @@ export default function Dashboard() {
 
   const filteredUsers = usersList.filter(u => 
     u.email !== localStorage.getItem('email') && 
+    u.role !== 'Admin' &&  // EXCLUDE ADMINS
+    u.role !== 'Owner' &&  // EXCLUDE OWNERS
     (u.email.toLowerCase().includes(userSearchQuery.toLowerCase()) || 
      u.role.toLowerCase().includes(userSearchQuery.toLowerCase()))
   );
@@ -161,10 +163,9 @@ export default function Dashboard() {
                 onChange={(e) => {
                   setDocSearchQuery(e.target.value);
                   setIsDocDropdownOpen(true);
-                  if (e.target.value === '') setSelectedDocId(''); // Clear selection if input is empty
+                  if (e.target.value === '') setSelectedDocId(''); 
                 }}
                 onFocus={() => setIsDocDropdownOpen(true)}
-                // setTimeout allows the onClick event on the dropdown item to fire before it hides
                 onBlur={() => setTimeout(() => setIsDocDropdownOpen(false), 200)} 
                 style={{ width: '100%', padding: '10px', boxSizing: 'border-box', border: '1px solid #ccc', borderRadius: '4px', outline: selectedDocId ? '2px solid #28a745' : 'none' }}
               />
@@ -182,7 +183,7 @@ export default function Dashboard() {
                       key={d._id}
                       onMouseDown={() => {
                         setSelectedDocId(d._id);
-                        setDocSearchQuery(d.originalName); // Auto-fill the input with the selected name
+                        setDocSearchQuery(d.originalName); 
                         setIsDocDropdownOpen(false);
                       }}
                       style={{ 
