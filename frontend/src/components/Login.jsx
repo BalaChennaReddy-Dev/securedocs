@@ -19,6 +19,7 @@ export default function Login() {
       // Store the ID badge and role securely in the browser
       localStorage.setItem('token', res.data.token);
       localStorage.setItem('role', res.data.role);
+      localStorage.setItem('email', res.data.email);
 
       // Route based on access level
       if (res.data.role === 'Admin') {
