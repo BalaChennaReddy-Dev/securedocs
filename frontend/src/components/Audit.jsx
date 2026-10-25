@@ -62,6 +62,10 @@ export default function Audit() {
           Manage Users ({users.length})
         </button>
       </div>
+        const logout = () => {
+    localStorage.clear();
+    navigate('/login');
+  };
 
       {view === 'users' && (
         <div style={{ border: '1px solid #ddd', borderRadius: '8px', padding: '20px' }}>
